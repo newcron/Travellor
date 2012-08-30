@@ -78,8 +78,12 @@
     		startLocation: "Hongkong",
     		country: "HK"
     	}; 
-    	
-    	var items = [];
+    	<?php
+    		$itm = @file_get_contents("datafile.json"); 
+    		if($itm === false) {$itm="[]";}
+    	?>
+    	var existingItems=<?php echo stripslashes($itm);?>;
+    	var items = []; 
     	
 		$(document).ready(function(){
 			initMaps(); 
@@ -98,11 +102,15 @@
 				resolve(loc, function(data){
 					centerOn(data);
 					var previewMarker = marker.blank(data, color); 
+					previewMarker.setDraggable(true); 
 					$("#preview-confirm, #preview-cancel").unbind();
 					$("#new-item-confirm-alert").show();
 					$("#preview-confirm").click(function(){
-
-						var item = new MapItem(title, loc, data.lat, data.lng); 
+						var confirmedLat  = previewMarker.getPosition(); 
+						data.lat = confirmedLat.lat(); 
+						data.lng = confirmedLat.lng(); 
+						
+						var item = new MapItem(title, loc, data.lat, data.lng, color); 
 						item.setMarker(marker.nextOf(data, color)); 
 						
 						items.push(item);
@@ -118,12 +126,24 @@
 			}); 
 			$("#new-item-confirm-alert").hide(); 
 			$("#action-save").click(function(e){ 
+				var converted = []; 
+				$.each(items, function(i, itm){converted.push(itm.export())});
 				e.preventDefault(); 
-				var d = {"content": JSON.stringify(items) }; 
-				$.ajax("storeprefs.php",{data: d, dataType: "json", type:"POST"})
+				var d = {"content": JSON.stringify(converted) }; 
+				$.ajax("datastore.php",{data: d, dataType: "json", type:"POST"})
 					.done(function(){alert("Saved"); })
 					.fail(function(){alert("error"); }); 
 			});
+			
+			// init existing items
+			$.each(existingItems, function(index, itm){
+				var loaded = new MapItem(itm.title, itm.address, itm.lat, itm.lng, itm.color); 
+				var m = marker.nextOf(itm, itm.color); 
+				loaded.setMarker(m); 
+				items.push(loaded); 
+				addToTable(loaded); 
+
+			}); 
 		}
 		
 		function addToTable(mapItem) {
@@ -138,12 +158,22 @@
 			console.log(mapItem);
 		}
 		
-		function MapItem(title, address, lat, lng) { 
+		function MapItem(title, address, lat, lng, color) { 
 			this.title = title; 
 			this.address = address; 
 			this.lat = lat; 
 			this.lng = lng; 
+			this.color = color; 
 			this.setMarker = function(marker) {this.marker = marker; }
+			this.export = function() {
+				return {
+					title: this.title, 
+					address: this.address, 
+					lat: this.lat,
+					lng: this.lng, 
+					color: this.color
+				}
+			}
 		}
 		
 		function initMaps() {
@@ -162,8 +192,8 @@
 		
 		function addMarker(data) {
 			var ll = new google.maps.LatLng(data.lat, data.lng);
-			var marker = new google.maps.Marker({position: ll, map: cfg.maps, title: data.search});
-			return marker; 
+			var mrk = new google.maps.Marker({position: ll, map: cfg.maps, title: data.search});
+			return mrk; 
 		}
 		
 		function centerOn(data) {
