@@ -12,6 +12,9 @@
 	#maps-area{height: 100%; }
 	.new-item input { width: 90%; }
 	.new-item select {width: 100%; }
+	#maps-area img {
+		max-width: none;
+	}
 	</style>
   </head>
   <body>
@@ -64,6 +67,7 @@
 					<tr>
 						<th>Ico</th>
 						<th>Address</th>
+
 					</tr>
 				</thead>
 				<tbody id="data-table-body">
@@ -150,12 +154,28 @@
 			var img = mapItem.marker.icon.url; 
 			var imgSrc = "<img src='"+img+"' />"; 
 			var html = "<tr><td>"+imgSrc+"</td><td><strong>"+mapItem.title+"</strong><br/>"+mapItem.address+"</td></tr>"; 
-			var item  = $(html);
-			console.log(item);
-			item.mouseover(function(){mapItem.marker.setAnimation(google.maps.Animation.BOUNCE);}); 
-			item.mouseout(function(){mapItem.marker.setAnimation(null);}); 
-			$("#data-table-body").append(item); 
-			console.log(mapItem);
+			var $item  = $(html);
+			
+			$item.mouseover(function(){mapItem.marker.setAnimation(google.maps.Animation.BOUNCE);}); 
+			$item.mouseout(function(){mapItem.marker.setAnimation(null);}); 
+			
+			$item.click(function(){
+				$("#item-controls").detach(); 
+				
+				var $controls = $('<div id="item-controls"><button id="delbtn" class="btn btn-danger" >Delete</button></div>'); 
+				$item.find("td:last").append($controls); 
+				$("#delbtn").click(function(){
+				alert("D"); 
+					$("#item-controls").detach(); 
+					$item.detach(); 
+					mapItem.marker.setMap(null); 
+					items = $.grep(items, function(i){return i !== mapItem});
+				}); 
+
+			}); 
+			
+			
+			$("#data-table-body").append($item); 
 		}
 		
 		function MapItem(title, address, lat, lng, color) { 
