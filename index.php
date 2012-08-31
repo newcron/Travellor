@@ -2,44 +2,64 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
-    <script src="bootstrap/js/bootstrap.min.js"></script>
-        <script src="json2.js"></script>
+    
+    <script src="json2.js"></script>
     <script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=true"></script>
 	<style type="text/css">
-	body, html, .maxheight {height: 100%; }
-	#maps-area{height: 100%; }
-	.new-item input { width: 90%; }
-	.new-item select {width: 100%; }
-	#maps-area img {
-		max-width: none;
+	body, html, .maxheight {height: 100%; padding: 0px; margin: 0px; font-family: Helvetica, Verdana, Arial }
+	#maps-area{height: 100%; width: 100%;  }
+	#markers-area {
+		position: fixed; 
+		top: 5px; 
+		right: 5px; 
+		
+		width: 250px; 
+		height: 400px; 
+		box-shadow: 2px 2px 2px rgba(0,0,0,0.4); 
+		background: white; 
+		border-radius: 2px;
+		border: 1px solid black;
 	}
+	
+	#titlebar { background: black; padding: 10px; color: white; font-weight: normal; }
+	#titlebar strong {display: inline-box; margin-right: 50px; }
+	#titlebar a {color: white; text-decoration: none; text-align: right; color: #ccc; font-size: 0.8em; }
+	#contentarea { padding: 10px; }
+	.new-item input { width: 98%; margin-bottom: 6px; border: 1px solid #ccc; padding: 3px;}
+	
+	#new-item-confirm-alert { 
+		border-color: black; 
+		border-style: solid;
+		border-width: 1px 0;
+		padding: 3px 0; 
+	} 
+	
+	#address-table {max-height: 300px; overflow: scroll-y; border-collapse: collapse; width: 100%;}
+	#address-table-wrapper {height: 250px; overflow: scroll; border: 1px solid black; margin-top: 10px; }
+	#data-table-body { max-height: 100px; overflow: hidden;}
+	.table-icon-cell {width: 32px; height: 28px; overflow: hidden;} 
+	#address-table td { border-bottom: 1px solid #ccc; padding: 2px; font-size: 0.8em; vertical-align: top;}
+	#address-table td:first-child {width: 32px;}
+	#address-table th { border: 1px solid black; padding: 2px; font-size: 0.8em; color: white; background: black;}
+	
+	#address-table .selected { background: #ccc; }
+
 	</style>
   </head>
   <body>
     
-	<div class=" container-fluid maxheight"  >
-		<div class="row-fluid maxheight" >
-	    <div class="span9" id="maps-area">
-	    	asasdf
+	    <div id="maps-area">
+
 	    </div>
-		<div class="span3" id="markers-area">
+		<div  id="markers-area">
+			<div id="titlebar">
+				<strong>Travellor</strong>
+				<a href="#" id="action-save">Save</a>
 
-		   <div class="navbar navbar-inverse">
-      			<div class="navbar-inner">
-					<div class="container">
-						<a class="brand" href="#">Travellor</a>
-						<div class="nav-collapse collapse">
-							<ul class="nav">
-								<li class="active"><a href="#" id="action-save">save</a></li>
-							</ul>
-      					</div><!--/.nav-collapse -->
-    				</div>
-				</div>
 			</div>
-
-
+			<div id="contentarea">
 
 			<form class="new-item">
 				
@@ -51,29 +71,30 @@
 					<option>Red</option>
 					<option>Yellow</option>
 				</select>
-				<p>
-					<button type="button" id="new-item-preview" class="btn btn-primary">Search</button>
-				</p>
+				<button type="button" id="new-item-preview" class="btn btn-primary">Search</button>
 				
-				<p id="new-item-confirm-alert" class="alert fade in">
+				
+				<p id="new-item-confirm-alert" >
 					Is this the location you are looking for? <br/>
 					<button type="button" id="preview-confirm">Yes</button>
 					<button type="button" id="preview-cancel">No</button>
 				</p>
 			</form>
 
-			<table class="table table-striped">
-				<thead>
-					<tr>
-						<th>Ico</th>
-						<th>Address</th>
-
-					</tr>
-				</thead>
-				<tbody id="data-table-body">
-					
-				</tbody>
-			</table>
+			<div id="address-table-wrapper">
+				<table class="table table-striped" id="address-table">
+					<thead>	
+						<tr>
+							<th>Icon</th>
+							<th>Location</th>
+						</tr>
+					</thead>
+					<tbody id="data-table-body">
+						
+					</tbody>
+				</table>
+			</div>
+			</div>
     	</div>
     	</div>
 	</div>
@@ -150,23 +171,36 @@
 			}); 
 		}
 		
+		var activeItem = null; 
+		var activeMarker = null; 
+		
 		function addToTable(mapItem) {
 			var img = mapItem.marker.icon.url; 
-			var imgSrc = "<img src='"+img+"' />"; 
+
+			var imgSrc = "<div class=\"table-icon-cell\"><img src='"+img+"' /></div>"; 
 			var html = "<tr><td>"+imgSrc+"</td><td><strong>"+mapItem.title+"</strong><br/>"+mapItem.address+"</td></tr>"; 
 			var $item  = $(html);
 			
-			$item.mouseover(function(){mapItem.marker.setAnimation(google.maps.Animation.BOUNCE);}); 
-			$item.mouseout(function(){mapItem.marker.setAnimation(null);}); 
 			
 			$item.click(function(){
-				$("#item-controls").detach(); 
+				if(activeItem!=null) {
+					activeItem.removeClass("selected"); 
+					activeMarker.setAnimation(null); 
+				}
+				$item.addClass("selected"); 
+				activeMarker = mapItem.marker;
+				activeMarker.setAnimation(google.maps.Animation.BOUNCE);
 				
-				var $controls = $('<div id="item-controls"><button id="delbtn" class="btn btn-danger" >Delete</button></div>'); 
-				$item.find("td:last").append($controls); 
-				$("#delbtn").click(function(){
-				alert("D"); 
-					$("#item-controls").detach(); 
+				activeItem = $item;
+				console.log($item);
+				$("#action-delete").detach(); 
+				
+				var $controls = $('<a href="#" id="action-delete">Delete</a>');
+
+				$("#titlebar").append($controls); 
+				$controls.click(function(){
+				 
+					$controls.detach(); 
 					$item.detach(); 
 					mapItem.marker.setMap(null); 
 					items = $.grep(items, function(i){return i !== mapItem});
@@ -235,6 +269,7 @@
 					
 		}
 		
+
 		var marker = {
 			blank: function(data, color) {
 				return marker.base(data, 'markers/largeTD'+color+"Icons/blank.png"); 	            
@@ -253,13 +288,9 @@
 			
 			base: function(data, icon) {
 				var size = new google.maps.Size(20, 34); 
-    	        // The origin for this image is 0,0.
 				var origin = new google.maps.Point(0,0);
-				// The anchor for this image is the base of the flagpole at 0,32.
 				var anchor = new google.maps.Point(10, 34);
-				
 				var image = new google.maps.MarkerImage(icon, size, origin, anchor); 
-				
 				var ll = new google.maps.LatLng(data.lat, data.lng);
 				var marker = new google.maps.Marker({position: ll, map: cfg.maps, title: data.search, icon: image});
 				return marker; 
