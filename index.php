@@ -16,7 +16,7 @@
 		right: 5px; 
 		
 		width: 250px; 
-		height: 400px; 
+ 
 		box-shadow: 2px 2px 2px rgba(0,0,0,0.4); 
 		background: white; 
 		border-radius: 2px;
@@ -24,7 +24,7 @@
 	}
 	
 	#titlebar { background: black; padding: 10px; color: white; font-weight: normal; }
-	#titlebar strong {display: inline-box; margin-right: 50px; }
+	#titlebar strong {display: inline-box; margin-right: 20px; }
 	#titlebar a {color: white; text-decoration: none; text-align: right; color: #ccc; font-size: 0.8em; }
 	#contentarea { padding: 10px; }
 	.new-item input { width: 98%; margin-bottom: 6px; border: 1px solid #ccc; padding: 3px;}
@@ -55,6 +55,7 @@
 	    </div>
 		<div  id="markers-area">
 			<div id="titlebar">
+				<a href="#" id="action-hide">_</a>
 				<strong>Travellor</strong>
 				<a href="#" id="action-save">Save</a>
 
@@ -119,6 +120,9 @@
 		}); 
 		
 		function initUi() {
+			$("#action-hide").click(function(){
+				$("#contentarea").slideToggle(); 
+			});
 			$("#new-item-preview").click(function(){
 				var loc = $("#new-item-address").val();
 				var title = $("#new-item-title").val();
