@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <?php
+
 define("DATA_FILE_DIR", "datafiles/"); 
 $datafile = $_GET["datafile"]; 
 
 
-
+$datafileExpl = explode(".",$datafile); 
+$country = $datafileExpl[sizeof($datafileExpl)-2]; 
 $dh  = opendir(DATA_FILE_DIR);
 while (false !== ($filename = readdir($dh))) {
 	if($filename[0]!=".") {
@@ -104,8 +106,8 @@ $datafile = $datafile != null  ? $datafile : $datafiles[0];
 	
 	<script type="text/javascript">
     	var cfg = {
-    		startLocation: "Hongkong",
-    		country: "HK", 
+    		startLocation: "<?php echo $country; ?>",
+    		country: "<?php echo $country; ?>", 
     		datafile: "<?php echo $datafile; ?>"
     	}; 
     	<?php
