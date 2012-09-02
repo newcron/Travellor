@@ -1,10 +1,19 @@
+var travellor = {}; 
 (function(){
 
 	$(document).ready(function(){
-		initMaps(); 
+		travellor.maps = initMaps(); 
 		initUi(); 
+		travellor.preview = initPreview(); 
 	
-	
+/*		travellor.maps.geocoder.geocode( { 'address': "night market, hong kong"}, function(results, status) {
+				if (status == google.maps.GeocoderStatus.OK) {
+					travellor.preview.openPreviewDialog(results); 
+				} else {
+					alert("Could not resolve "+address); 
+				}
+
+			});  */
 	
 	}); 
 	
@@ -17,8 +26,8 @@
 			var title = $("#new-item-title").val();
 			var color = $("#new-item-color").val();
 			
-			resolve(loc, function(data){
-				centerOn(data);
+			travellor.maps.resolve(loc, function(data){
+				centerOnAndZoom(data);
 				var previewMarker = marker.blank(data, color); 
 				previewMarker.setDraggable(true); 
 				$("#preview-confirm, #preview-cancel").unbind();
@@ -47,7 +56,10 @@
 			var converted = []; 
 			$.each(items, function(i, itm){converted.push(itm.export())});
 			e.preventDefault(); 
-			var d = {"content": JSON.stringify(converted) }; 
+			var d = {
+				"content": JSON.stringify(converted), 
+				"datafile": cfg.datafile
+			}; 
 			$.ajax("datastore.php",{data: d, dataType: "json", type:"POST"})
 				.done(function(){alert("Saved"); })
 				.fail(function(){alert("error"); }); 
@@ -62,6 +74,22 @@
 			addToTable(loaded); 
 	
 		}); 
+	}
+	
+	function initPreview() {
+		$("#previewarea").hide(); 
+		
+		var openPreviewDialog = function(resultProposals) {
+			$("#previewarea").show();
+			var $pi = $("#preview-items"); 
+			$pi.html(""); 
+
+			$.each(resultProposals, function(ix, it){
+				console.log(it); 
+			});
+		}
+		
+		return { openPreviewDialog: openPreviewDialog}
 	}
 	
 	var activeItem = null; 
@@ -82,6 +110,7 @@
 			}
 			$item.addClass("selected"); 
 			activeMarker = mapItem.marker;
+			centerOnAndZoom(mapItem);
 			activeMarker.setAnimation(google.maps.Animation.BOUNCE);
 			
 			activeItem = $item;
@@ -130,37 +159,43 @@
 	
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		};
-		cfg.maps = new google.maps.Map(document.getElementById("maps-area"), initialOpts);
-		cfg.geocoder = new google.maps.Geocoder(); 
+		var maps = new google.maps.Map(document.getElementById("maps-area"), initialOpts);
+		var geocoder = new google.maps.Geocoder(); 
+		
+		var resolve = function(address, callback) {
+			geocoder.geocode( { 'address': address+", "+cfg.country}, function(results, status) {
+				if (status == google.maps.GeocoderStatus.OK) {
+					var res = results[0].geometry.location; 
+					callback({ "lat": res.lat(), "lng": res.lng(), "search":  address}); 
+				} else {
+					alert("Could not resolve "+address); 
+				}
+
+			}); 
+		}
 		
 		resolve(cfg.startLocation, centerOn); 
+		
+		return {
+			maps: maps, 
+			geocoder: geocoder, 
+			resolve: resolve 
+		}; 
 	
 	}
 	
-	function addMarker(data) {
-		var ll = new google.maps.LatLng(data.lat, data.lng);
-		var mrk = new google.maps.Marker({position: ll, map: cfg.maps, title: data.search});
-		return mrk; 
-	}
 	
 	function centerOn(data) {
 		var loc  = new google.maps.LatLng(data.lat, data.lng);
-		cfg.maps.setCenter(loc);
+		travellor.maps.maps.setCenter(loc);
+
 	}
 	
-	function resolve(address, callback) {
-		cfg.geocoder.geocode( { 'address': address+", "+cfg.country}, function(results, status) {
-			if (status == google.maps.GeocoderStatus.OK) {
-				var res = results[0].geometry.location; 
-				callback({ "lat": res.lat(), "lng": res.lng(), "search":  address}); 
-			} else {
-				alert("Could not resolve "+address); 
-			}
-			
-		}); 
-	
-				
+	function centerOnAndZoom(data) {
+		centerOn(data); 
+		travellor.maps.maps.setZoom(15); 
 	}
+
 	
 	
 	var marker = {
@@ -185,7 +220,7 @@
 			var anchor = new google.maps.Point(10, 34);
 			var image = new google.maps.MarkerImage(icon, size, origin, anchor); 
 			var ll = new google.maps.LatLng(data.lat, data.lng);
-			var marker = new google.maps.Marker({position: ll, map: cfg.maps, title: data.search, icon: image});
+			var marker = new google.maps.Marker({position: ll, map: travellor.maps.maps, title: data.search, icon: image});
 			return marker; 
 	
 		}, 
