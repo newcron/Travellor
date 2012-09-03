@@ -1,0 +1,5 @@
+@page {
+	size: landscape;
+}
+#markers-area { display: none; }
+#maps-area{ width: 1400px; height: 800px; }
