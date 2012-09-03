@@ -1,4 +1,6 @@
-body, html, .maxheight {height: 100%; padding: 0px; margin: 0px; font-family: Helvetica, Verdana, Arial }
+@media screen, handheld {
+ 
+	body, html, .maxheight {height: 100%; padding: 0px; margin: 0px; font-family: Helvetica, Verdana, Arial }
 	#maps-area{height: 100%; width: 100%;  }
 	#markers-area {
 		position: fixed; 
@@ -52,3 +54,10 @@ body, html, .maxheight {height: 100%; padding: 0px; margin: 0px; font-family: He
 	}
 	
 	#preview-items-wrapper {max-height: 450px; min-height: 100px; border: 1px solid black; overflow: scroll; margin: 10px; }
+}	
+
+@media print {
+
+	#markers-area { display: none; }
+	#maps-area{ width: 15cm; height: 20cm; }
+}

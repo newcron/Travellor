@@ -5,8 +5,6 @@ define("DATA_FILE_DIR", "datafiles/");
 $datafile = $_GET["datafile"]; 
 
 
-$datafileExpl = explode(".",$datafile); 
-$country = $datafileExpl[sizeof($datafileExpl)-2]; 
 $dh  = opendir(DATA_FILE_DIR);
 while (false !== ($filename = readdir($dh))) {
 	if($filename[0]!=".") {
@@ -15,6 +13,12 @@ while (false !== ($filename = readdir($dh))) {
 }
 
 $datafile = $datafile != null  ? $datafile : $datafiles[0]; 
+
+
+$datafileExpl = explode(".",$datafile); 
+$country = $datafileExpl[sizeof($datafileExpl)-2]; 
+
+$style = $_GET["print"] == true ? "print.css" : "style.css"; 
 ?>
 <html lang="en">
   <head>
@@ -24,7 +28,7 @@ $datafile = $datafile != null  ? $datafile : $datafiles[0];
     <script src="json2.js"></script>
     <script type="text/javascript" src="https://maps.google.com/maps/api/js?sensor=true"></script>
     <script type="text/javascript" src="travellor.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="<?php print $style;?>">
 </head>
 <body>
 	<div id="maps-area">
@@ -34,6 +38,7 @@ $datafile = $datafile != null  ? $datafile : $datafiles[0];
 			<a href="#" id="action-hide">_</a>
 			<strong>Travellor</strong>
 			<a href="#" id="action-save">Save</a>
+
 		</div>
 		<div id="contentarea">		
 			<form class="new-item">

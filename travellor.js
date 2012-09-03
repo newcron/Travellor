@@ -119,7 +119,7 @@ var travellor = {};
 			
 			var $controls = $('<a href="#" id="action-delete">Delete</a>');
 	
-			$("#titlebar").append($controls); 
+			$("#markers-area .titlebar").append($controls); 
 			$controls.click(function(){
 			 
 				$controls.detach(); 
