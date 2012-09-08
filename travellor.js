@@ -5,16 +5,6 @@ var travellor = {};
 		travellor.maps = initMaps(); 
 		initUi(); 
 		travellor.preview = initPreview(); 
-	
-/*		travellor.maps.geocoder.geocode( { 'address': "night market, hong kong"}, function(results, status) {
-				if (status == google.maps.GeocoderStatus.OK) {
-					travellor.preview.openPreviewDialog(results); 
-				} else {
-					alert("Could not resolve "+address); 
-				}
-
-			});  */
-	
 	}); 
 	
 	function initUi() {
